@@ -1,5 +1,5 @@
 /*
-    Project name: xterminal
+    Project name: piminal
     Description: An implementation of a kernel interface with basic commands.
     Author: Charlito G. Piao Jr.
 
