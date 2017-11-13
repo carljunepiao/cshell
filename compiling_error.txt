@@ -1,0 +1,6 @@
+/home/carlpiao/Documents/Projects/piminal/piterminal.c:183:6: error: conflicting types for ‘_help’
+ void _help(){
+      ^
+/home/carlpiao/Documents/Projects/piminal/piterminal.c:28:5: note: previous declaration of ‘_help’ was here
+ int _help(char **args);
+     ^

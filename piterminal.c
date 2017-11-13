@@ -176,14 +176,42 @@ int _type(char **args){
 
 //EXIT- close the piterminal
 int _quit(char **args){
-
     return 0;
 }
 
+//HELP- Show the list of commands
 int _help(char **args){
+    int i, j;
+    printf("\n ~ List of commands: \n");
+
+    for(i = 0, j = 1; i < _num_commands(); i++,j++){
+        printf("%d. %s\n",j,commands_str[i]);
+    }
 
     return 1;
 }
+
+/*
+    Handle input functions
+*/
+
+//Launch Commands
+int _launch(char **args){
+    
+}
+
+//Execute Commands
+
+
+//Read Line input
+
+
+//Split Line input
+
+
+/*
+    Main Function
+*/
 
 int main(int argc, char **argv)
 {
