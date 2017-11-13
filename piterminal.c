@@ -5,11 +5,11 @@
     Compiler: GPP Compiler
 */
 
+#include <sys/wait.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/wait.h>
 
 int _cd(char **args);
 int _chdir(char **args);
@@ -25,9 +25,9 @@ int _rename(char **args);
 int _rmdir(char **args);
 int _time(char **args);
 int _type(char **args);
-
 int _help(char **args);
-int _exit(char **args);
+int _quit(char **args);
+
 
 char *commands_str[] = {
     "cd",
@@ -45,7 +45,7 @@ char *commands_str[] = {
     "time",
     "type",
     "help",
-    "exit"
+    "quit"
 };
 
 int (*commands_func[]) (char**) = {
@@ -64,7 +64,7 @@ int (*commands_func[]) (char**) = {
     &_time,
     &_type,
     &_help,
-    &_exit,
+    &_quit
 };
 
 int _num_commands(){
@@ -174,20 +174,34 @@ int _type(char **args){
     return 1;
 }
 
+//EXIT- close the piterminal
+int _quit(char **args){
 
+    return 0;
+}
 
+int _help(char **args){
+
+    return 1;
+}
 
 int main(int argc, char **argv)
 {
-    printf("\n\n\t\t\t~ Welcome to piterminal ~\n\n");
+    printf("\n\n\t\t\t~ WELCOME TO PITERMINAL\n\n");
     // printf("\n\n\t\t\tGenerate PI in the terminal\n\n\n");
 
-    int c;
+    char *line;
+    char **args;
+    int status = 1;
 
-    while ((c = getchar()) != 49) {
-        printf("%d", c);
-        // putchar(c);
-    }
+    do{
+        printf("~ ");
 
+        // free(line);
+        // free(args);
+        status = 0;
+    }while(status);
+
+    // return EXIT_SUCCESS;
     return 0;
 }

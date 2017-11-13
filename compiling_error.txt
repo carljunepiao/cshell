@@ -1,7 +1,0 @@
-/home/carlpiao/Documents/Projects/piminal/piterminal.c:30:5: error: conflicting types for ‘_exit’
- int _exit(char **args);
-     ^
-In file included from /home/carlpiao/Documents/Projects/piminal/piterminal.c:11:0:
-/usr/include/unistd.h:606:13: note: previous declaration of ‘_exit’ was here
- extern void _exit (int __status) __attribute__ ((__noreturn__));
-             ^
