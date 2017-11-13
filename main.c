@@ -2,8 +2,7 @@
     Project name: piminal
     Description: An implementation of a kernel interface with basic commands.
     Author: Charlito G. Piao Jr.
-
-    Compiler used: GPP Compiler
+    Compiler: GPP Compiler
 */
 
 #include <stdlib.h>
@@ -13,10 +12,16 @@
 //read a line in the piminal
 #define LSH_RL_BUFSIZE 1024
 char *_read(void){
-    
+
 }
 
+char *_split(){
 
+}
+
+char *_execute(){
+
+}
 
 int _input(){
     char *line;
@@ -37,7 +42,7 @@ int _input(){
 int main(int argc, char **argv)
 {
 
-    printf("Generate PI in the terminal\n");
+    printf("Generate PI in the terminal based on the \n");
     _input();
     return 0;
 }
