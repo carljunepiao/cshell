@@ -192,31 +192,126 @@ int _help(char **args){
 }
 
 /*
-    Handle input functions
+    Helper Functions
 */
 
-//Launch Commands
+//Launch
 int _launch(char **args){
-    
+    int status;
+    pid_t pid = fork();
+
+    if(pid = 0){
+        if(execvp(args[0], args) == -1){
+            perror("psh:");
+        exit(1);
+    }
+    }else if(pid < 0){
+        perror("psh:");
+    }else{
+        do{
+            waitpid(pid, &status, WUNTRACED);
+        }while(!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+    return 1;
 }
 
 //Execute Commands
+int _execute(char **args){
+    int i;
 
+    if(args[0] == NULL){
+        return 1;
+    }
+
+    for(i = 0; i < _num_commands(); i++){
+        if(strcmp(args[0], commands_str[i]) == 0){
+            return (*commands_func[i])(args);
+        }
+    }
+
+    return _launch(args);
+}
 
 //Read Line input
+#define LSH_RL_BUFSIZE 1024
 
+char *_readline(void){
+    int buffersize = LSH_RL_BUFSIZE;
+    int position = 0;
+    char *buffer = (char*)malloc(sizeof(char) * buffersize);
+    int c;
+
+    if(!buffer){
+        fprintf(stderr, "psh: Allocation error\n");
+        exit(1);
+    }
+
+    while((c = getchar())!= EOF){
+        if(c == '\n'){
+            buffer[position] = '\0';
+            return buffer;
+        }else{
+            buffer[position] = c;
+        }
+        position++;
+
+        if(position >= buffersize){
+            buffersize += LSH_RL_BUFSIZE;
+            buffer = (char*)realloc(buffer, buffersize);
+
+            if(!buffer){
+                fprintf(stderr, "psh: Allocation Error!\n");
+                exit(1);
+            }
+        }
+    }
+    exit(0);
+}
 
 //Split Line input
+#define LSH_TOK_BUFSIZE 64
+#define LSH_TOK_DELIM " \t\r\n\a"
+
+char **_splitline(char *line){
+    int buffersize = LSH_TOK_BUFSIZE, position = 0;
+    char **tokens = (char**)malloc(buffersize * sizeof(char*));
+    char *token, **tokens_backup;
+
+    if(!tokens){
+        fprintf(stderr, "psh: Allocation Error!\n");
+        exit(1);
+    }
+
+    token = strtok(line, LSH_TOK_DELIM);
+
+    while(token!=NULL){
+        tokens[position] = token;
+        position++;
+
+        if(position >= buffersize){
+            buffersize += LSH_TOK_BUFSIZE;
+            tokens_backup = tokens;
+            tokens = (char**) realloc(tokens, buffersize * sizeof(char*));
+
+            if(!tokens){
+                free(tokens_backup);
+                fprintf(stderr, "psh: Allocation Error!\n");
+                exit(1);
+            }
+        }
+        token = strtok(NULL, LSH_TOK_DELIM);
+    }
+    tokens[position] = NULL;
+    return tokens;
+}
 
 
 /*
     Main Function
 */
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
     printf("\n\n\t\t\t~ WELCOME TO PITERMINAL\n\n");
-    // printf("\n\n\t\t\tGenerate PI in the terminal\n\n\n");
 
     char *line;
     char **args;
@@ -224,12 +319,13 @@ int main(int argc, char **argv)
 
     do{
         printf("~ ");
+        line = _readline();
+        args = _splitline(line);
+        status = _execute(args);
 
-        // free(line);
-        // free(args);
-        status = 0;
+        free(line);
+        free(args);
     }while(status);
 
-    // return EXIT_SUCCESS;
     return 0;
 }
