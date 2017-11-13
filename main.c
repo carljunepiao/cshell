@@ -10,9 +10,34 @@
 #include <stdio.h>
 #include <string.h>
 
+//read a line in the piminal
+#define LSH_RL_BUFSIZE 1024
+char *_read(void){
+    
+}
+
+
+
+int _input(){
+    char *line;
+    char **args;
+    bool status = true;
+
+    while (status) {
+        printf("~ ");
+        line = _read();
+        args = _split(line);
+        status = _execute(args);
+    }
+
+    return 0;
+}
+
 // main entry point
 int main(int argc, char **argv)
 {
+
     printf("Generate PI in the terminal\n");
+    _input();
     return 0;
 }
