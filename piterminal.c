@@ -10,62 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 
-int _cd(char **args);
-int _chdir(char **args);
-int _cls(char **args);
-int _cmd(char **args);
-int _copy(char **args);
-int _date(char **args);
-int _del(char **args);
-int _dir(char **args);
-int _mkdir(char **args);
-int _move(char **args);
-int _rename(char **args);
-int _rmdir(char **args);
-int _time(char **args);
-int _type(char **args);
-int _help(char **args);
-int _quit(char **args);
-
-
-char *commands_str[] = {
-    "cd",
-    "chdir",
-    "cls",
-    "cmd",
-    "copy",
-    "date",
-    "del",
-    "dir",
-    "mkdir",
-    "move",
-    "rename",
-    "rmdir",
-    "time",
-    "type",
-    "help",
-    "quit"
-};
-
-int (*commands_func[]) (char**) = {
-    &_cd,
-    &_chdir,
-    &_cls,
-    &_cmd,
-    &_copy,
-    &_date,
-    &_del,
-    &_dir,
-    &_mkdir,
-    &_move,
-    &_rename,
-    &_rmdir,
-    &_time,
-    &_type,
-    &_help,
-    &_quit
-};
+int _cd(char **args), _chdir(char **args), _cls(char **args), _cmd(char **args), _copy(char **args), _date(char **args), _del(char **args), _dir(char **args), _mkdir(char **args), _move(char **args), _rename(char **args), _rmdir(char **args), _time(char **args), _type(char **args), _help(char **args), _quit(char **args);
+char *commands_str[] = {"cd", "chdir", "cls", "cmd", "copy", "date", "del", "dir", "mkdir", "move", "rename", "rmdir", "time", "type", "help", "quit"};
+int (*commands_func[]) (char**) = {&_cd, &_chdir, &_cls, &_cmd, &_copy, &_date, &_del, &_dir, &_mkdir, &_move, &_rename, &_rmdir, &_time, &_type, &_help, &_quit};
 
 int _num_commands(){
     return sizeof(commands_str) / sizeof(char *);
@@ -78,14 +28,17 @@ int _num_commands(){
 //CD - Displays the name of or changes the current directory.
 int _cd(char **args){
     char cwd[1024];
+    int stat;
+
     if(args[1] == NULL){
          //show current directory
          getcwd(cwd, sizeof(cwd));
          fprintf(stderr, "Current working dir: %s\n", cwd);
     }else{
-        chdir(args[1]);
-        if(chdir(args[1]) != 0){
-            perror("psh:");
+        stat = chdir(args[1]);
+
+        if(stat != 0){
+            perror("psh");
         }
     }
     return 1;
@@ -94,7 +47,7 @@ int _cd(char **args){
 //CHDIR - Changes the current directory.
 int _chdir(char **args){
     if(args[1] == NULL){
-        fprintf(stderr, "psh: expected argument to \"chdir\"\n");
+        fprintf(stderr, "psh: expected location after \"chdir\"\n");
     }else if(chdir(args[1]) != 0){
         perror("psh:");
     }
@@ -117,11 +70,15 @@ int _cmd(char **args){
 //COPY- Copies one or more files to another location.
 int _copy(char **args){
 
+
     return 1;
 }
 
 //DATE- Displays or sets the date.
 int _date(char **args){
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+    printf("%d-%d-%d\n",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday);
 
     return 1;
 }
@@ -164,6 +121,10 @@ int _rmdir(char **args){
 
 //TIME- Displays or sets the system time.
 int _time(char **args){
+    time_t t = time(NULL);
+    struct tm tm = *localtime(&t);
+
+    printf("%d:%d:%d\n",tm.tm_hour,tm.tm_min, tm.tm_sec);
 
     return 1;
 }
@@ -182,7 +143,7 @@ int _quit(char **args){
 //HELP- Show the list of commands
 int _help(char **args){
     int i, j;
-    printf("\n ~ List of commands: \n");
+    printf("\nList of commands: \n");
 
     for(i = 0, j = 1; i < _num_commands(); i++,j++){
         printf("%d. %s\n",j,commands_str[i]);
@@ -200,7 +161,7 @@ int _launch(char **args){
     int status;
     pid_t pid = fork();
 
-    if(pid = 0){
+    if(pid == 0){
         if(execvp(args[0], args) == -1){
             perror("psh:");
         exit(1);
@@ -311,14 +272,16 @@ char **_splitline(char *line){
 */
 
 int main(int argc, char **argv){
-    printf("\n\n\t\t\t~ WELCOME TO PITERMINAL\n\n");
+    printf("\n\n--------------------------------------------------------------------------------");
+    printf("---\t\t\t~ WELCOME TO PITERMINAL \t\t\t     ---\n");
+    printf("--------------------------------------------------------------------------------\n");
 
     char *line;
     char **args;
     int status = 1;
 
     do{
-        printf("~ ");
+        printf("\n~ ");
         line = _readline();
         args = _splitline(line);
         status = _execute(args);
