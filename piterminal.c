@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -28,6 +29,17 @@ int _num_commands(){
 }
 
 /*
+    Command Helper Function
+*/
+
+//Checker function if directory or file
+int _checktype(const char *path){
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISREG(path_stat.st_mode);
+}
+
+/*
     Implementation of commands 16 commands
 */
 
@@ -37,7 +49,6 @@ int _cd(char **args){
     int stat;
 
     if(args[1] == NULL){
-         //show current directory
          getcwd(cwd, sizeof(cwd));
          fprintf(stderr, "Current working dir: %s\n", cwd);
     }else{
@@ -67,7 +78,7 @@ int _cls(char **args){
     return 1;
 }
 
-//CMD - Starts a new instance of the command interpreter.
+//TODO:CMD - Starts a new instance of the command interpreter.
 int _cmd(char **args){
 
     if(args[1] == NULL){
@@ -79,12 +90,43 @@ int _cmd(char **args){
     return 1;
 }
 
-//COPY- Copies one or more files to another location.
+//TODO:COPY- Copies one or more files to another location.
 int _copy(char **args){
-    if(args[1] == NULL){
-        perror("psh");
-    }else{
+    int src_fd, dst_fd, n, err;
+    unsigned char buffer[4096];
+    char *src_path, *dst_path;
 
+    if(args[1] == NULL){
+        printf("psh: no file selected");
+    }else{
+        printf("psh: copying");
+        src_path = args[1];
+        dst_path = args[2];
+
+        //TODO:check if multiple files
+
+        src_fd = open(src_path, O_RDONLY);
+        dst_fd = open(dst_path, O_CREAT | O_WRONLY);
+
+        while (1) {
+            err = read(src_fd, buffer, 4096);
+            if (err == -1) {
+                printf("Error reading file.\n");
+                exit(1);
+            }
+            n = err;
+
+            if (n == 0) break;
+
+            err = write(dst_fd, buffer, n);
+            if (err == -1) {
+                printf("Error writing to file.\n");
+                exit(1);
+            }
+        }
+
+        close(src_fd);
+        close(dst_fd);
     }
 
     return 1;
@@ -92,10 +134,22 @@ int _copy(char **args){
 
 //DATE- Displays or sets the date.
 int _date(char **args){
+    int tempYear, tempMonth, tempDay;
+    // char date;
+
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
+
     printf("Current date: %d-%d-%d\n",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday);
     printf("Enter the new date: (yy-mm-dd) ");
+
+    //TODO: Ask for year,month, and day
+    tempYear = tempMonth = tempDay = 1;
+
+    tm.tm_year = tempYear;
+    tm.tm_mon = tempMonth;
+    tm.tm_mday = tempDay;
+    printf("\n");
 
     return 1;
 }
@@ -107,7 +161,8 @@ int _del(char **args){
         printf("psh: No file selected\n");
     }else{
         //Check if directory or file (needs to be file only)
-        remove(args[1]);
+        if(_checktype(args[1]))
+            remove(args[1]);
     }
 
     return 1;
@@ -119,7 +174,7 @@ int _dir(char **args){
     DIR *dr = opendir(".");
 
     while((de = readdir(dr)) != NULL){
-        printf("%s\n", de ->d_name);
+        printf("%s\n", de->d_name);
     }
     closedir(dr);
 
@@ -146,7 +201,7 @@ int _move(char **args){
 
 //RENAME- Renames a file or files.
 int _rename(char **args){
-    
+
 
     return 1;
 }
@@ -157,7 +212,11 @@ int _rmdir(char **args){
     if(args[1] == NULL){
         printf("psh: Directory not found\n");
     }else{
-
+        //Check if directory or file (needs to be directory only)
+        if(_checktype(args[1]))
+            printf("psh: choose directory");
+        else
+            remove(args[1]);
     }
 
     return 1;
@@ -165,10 +224,21 @@ int _rmdir(char **args){
 
 //TIME- Displays or sets the system time.
 int _time(char **args){
+    int tempHour, tempMin, tempSec;
+
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
 
     printf("%d:%d:%d\n",tm.tm_hour,tm.tm_min, tm.tm_sec);
+    printf("Enter the new date: (yy-mm-dd) ");
+
+    //TODO: Ask for hour,minute, and second
+    tempHour = tempMin = tempSec = 1;
+
+    tm.tm_hour = tempHour;
+    tm.tm_min = tempMin;
+    tm.tm_sec = tempSec;
+    printf("\n");
 
     return 1;
 }
@@ -225,12 +295,13 @@ int _pi(char **args){
     for(;d=0,g=c*2; c-=14,printf("%.4d",e+d/a),e=d%a)
     for(b=c;d+=f[b]*a,f[b]=d%--g,d/=g--,--b;d*=b);
 
+    printf("\n");
     return 1;
 }
 
 
 /*
-    Helper Functions
+    Main Helper Functions
 */
 
 //Launch
