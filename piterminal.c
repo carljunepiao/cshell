@@ -11,11 +11,17 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#pragma GCC diagnostic ignored "-Wwrite-strings"
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-int _cd(char **args), _chdir(char **args), _cls(char **args), _cmd(char **args), _copy(char **args), _date(char **args), _del(char **args), _dir(char **args), _mkdir(char **args), _move(char **args), _rename(char **args), _rmdir(char **args), _time(char **args), _type(char **args), _help(char **args), _quit(char **args);
-char *commands_str[] = {"cd", "chdir", "cls", "cmd", "copy", "date", "del", "dir", "mkdir", "move", "rename", "rmdir", "time", "type", "help", "quit"};
-int (*commands_func[]) (char**) = {&_cd, &_chdir, &_cls, &_cmd, &_copy, &_date, &_del, &_dir, &_mkdir, &_move, &_rename, &_rmdir, &_time, &_type, &_help, &_quit};
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
+int _cd(char **args), _chdir(char **args), _cls(char **args), _cmd(char **args), _copy(char **args), _date(char **args), _del(char **args), _dir(char **args), _mkdir(char **args), _move(char **args), _rename(char **args), _rmdir(char **args), _time(char **args), _type(char **args), _help(char **args), _quit(char **args), _pi(char **args);
+char *commands_str[] = {"cd", "chdir", "cls", "cmd", "copy", "date", "del", "dir", "mkdir", "move", "rename", "rmdir", "time", "type", "help", "quit", "pi"};
+int (*commands_func[]) (char**) = {&_cd, &_chdir, &_cls, &_cmd, &_copy, &_date, &_del, &_dir, &_mkdir, &_move, &_rename, &_rmdir, &_time, &_type, &_help, &_quit, &_pi};
 
 int _num_commands(){
     return sizeof(commands_str) / sizeof(char *);
@@ -49,7 +55,7 @@ int _chdir(char **args){
     if(args[1] == NULL){
         fprintf(stderr, "psh: expected location after \"chdir\"\n");
     }else if(chdir(args[1]) != 0){
-        perror("psh:");
+        perror("psh");
     }
 
     return 1;
@@ -64,12 +70,22 @@ int _cls(char **args){
 //CMD - Starts a new instance of the command interpreter.
 int _cmd(char **args){
 
+    if(args[1] == NULL){
+
+    }else{
+        perror("psh");
+    }
+
     return 1;
 }
 
 //COPY- Copies one or more files to another location.
 int _copy(char **args){
+    if(args[1] == NULL){
+        perror("psh");
+    }else{
 
+    }
 
     return 1;
 }
@@ -78,7 +94,8 @@ int _copy(char **args){
 int _date(char **args){
     time_t t = time(NULL);
     struct tm tm = *localtime(&t);
-    printf("%d-%d-%d\n",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday);
+    printf("Current date: %d-%d-%d\n",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday);
+    printf("Enter the new date: (yy-mm-dd) ");
 
     return 1;
 }
@@ -86,35 +103,62 @@ int _date(char **args){
 //DEL- Deletes one or more files.
 int _del(char **args){
 
+    if(args[1] == NULL){
+        printf("psh: No file selected\n");
+    }else{
+        //Check if directory or file (needs to be file only)
+        remove(args[1]);
+    }
+
     return 1;
 }
 
 //DIR- Displays a list of files and subdirectories in a directory.
 int _dir(char **args){
+    struct dirent *de;
+    DIR *dr = opendir(".");
+
+    while((de = readdir(dr)) != NULL){
+        printf("%s\n", de ->d_name);
+    }
+    closedir(dr);
 
     return 1;
 }
 
 //MKDIR- Creates a directory.
 int _mkdir(char **args){
+    struct stat st = {0};
 
+    if(stat(args[1],&st) == -1){
+        mkdir(args[1], 0700);
+    }
     return 1;
 }
 
 //MOVE- Moves one or more files from one directory to another directory.
 int _move(char **args){
 
+
+
     return 1;
 }
 
 //RENAME- Renames a file or files.
 int _rename(char **args){
+    
 
     return 1;
 }
 
 //RMDIR- Removes a directory.
 int _rmdir(char **args){
+
+    if(args[1] == NULL){
+        printf("psh: Directory not found\n");
+    }else{
+
+    }
 
     return 1;
 }
@@ -131,6 +175,25 @@ int _time(char **args){
 
 //TYPE- Displays the contents of a text file.
 int _type(char **args){
+    FILE *fptr;
+    char c;
+
+    if(args[1] != NULL){
+        fptr = fopen(args[1], "r");
+
+        if(fptr == NULL){
+            printf("File doesn't exist.\n");
+        }
+
+        c = fgetc(fptr);
+        while(c != EOF){
+            printf("%c",c);
+            c = fgetc(fptr);
+        }
+        fclose(fptr);
+    }else{
+        printf("psh: no file selected\n");
+    }
 
     return 1;
 }
@@ -152,6 +215,20 @@ int _help(char **args){
     return 1;
 }
 
+//pi ao- show pi calculation
+int _pi(char **args){
+
+    //Dik T. Winter Implementation of computation of first 800 digits of pi
+    int a=10000,b,c=2800,d,e,f[2801],g;
+
+    for(;b-c;)f[b++]=a/5;
+    for(;d=0,g=c*2; c-=14,printf("%.4d",e+d/a),e=d%a)
+    for(b=c;d+=f[b]*a,f[b]=d%--g,d/=g--,--b;d*=b);
+
+    return 1;
+}
+
+
 /*
     Helper Functions
 */
@@ -163,11 +240,11 @@ int _launch(char **args){
 
     if(pid == 0){
         if(execvp(args[0], args) == -1){
-            perror("psh:");
+            perror("psh");
         exit(1);
     }
     }else if(pid < 0){
-        perror("psh:");
+        perror("psh");
     }else{
         do{
             waitpid(pid, &status, WUNTRACED);
@@ -272,7 +349,7 @@ char **_splitline(char *line){
 */
 
 int main(int argc, char **argv){
-    printf("\n\n--------------------------------------------------------------------------------");
+    printf("\n--------------------------------------------------------------------------------");
     printf("---\t\t\t~ WELCOME TO PITERMINAL \t\t\t     ---\n");
     printf("--------------------------------------------------------------------------------\n");
 
