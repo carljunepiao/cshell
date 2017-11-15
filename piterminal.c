@@ -3,6 +3,10 @@
     Description: An implementation of a kernel interface with basic commands.
     Author: Charlito G. Piao Jr.
     Compiler: GPP Compiler
+
+    *note:
+        some libraries use depends on linux operating system which
+        means program won't work in windows if not properly setup.
 */
 
 #include <sys/wait.h>
@@ -191,10 +195,13 @@ int _mkdir(char **args){
     return 1;
 }
 
-//MOVE- Moves one or more files from one directory to another directory.
+//TODO:MOVE- Moves one or more files from one directory to another directory.
 int _move(char **args){
+    if(args[1] == NULL){
+        printf("psh: no file selected\n");
+    }else{
 
-
+    }
 
     return 1;
 }
@@ -202,6 +209,11 @@ int _move(char **args){
 //RENAME- Renames a file or files.
 int _rename(char **args){
 
+    if(args[1] == NULL || args[2] == NULL){
+        printf("psh: no file selected\n");
+    }else{
+        rename(args[1], args[2]);
+    }
 
     return 1;
 }
