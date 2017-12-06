@@ -22,10 +22,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+//Ignore warnings
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-//Forward declarations
+//Function declarations
 int _cd(char **args), _chdir(char **args), _cls(char **args), _cmd(char **args), _copy(char **args), _date(char **args), _del(char **args), _dir(char **args), _mkdir(char **args), _move(char **args), _rename(char **args), _rmdir(char **args), _time(char **args), _type(char **args), _help(char **args), _quit(char **args), _pi(char **args), _about(char **args);
 
 //List of builtin commands
