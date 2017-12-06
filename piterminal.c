@@ -5,22 +5,22 @@
     Compiler: GPP Compiler
     Header: files from the GNU C Library
 
-    *note:
-        some libraries use depends on unix/linux operating system which
-        means program won't work in windows if not properly setup.
+    *Note:
+            Some libraries used depends on unix/linux operating
+            system which means program won't work in windows like and
+            some functions used builtin commands like chdir but modified
+            to follow the provided instructions.
 */
 
-#include <sys/wait.h> //chdir(), fork(), exec(), pid_t
-#include <stdlib.h> //malloc(), realloc(), free(), exit(), execvp(), EXIT_SUCCESS, EXIT_FAILURE
-#include <stdio.h> //printf(), fprintf(),stderr, getchar(), perror()
-#include <string.h> //strcmp(), strktok
-// #include <unistd.h>
-#include <time.h>
-#include <dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include <sys/wait.h>   //For: chdir(), fork(), exec(), pid_t
+#include <stdlib.h>     //For: malloc(), realloc(), free(), exit(), execvp(), EXIT_SUCCESS, EXIT_FAILURE
+#include <stdio.h>      //For: printf(), fprintf(),stderr, getchar(), perror()
+#include <string.h>     //For: strcmp(), strktok()
+#include <time.h>       //For: time, localtime
+#include <dirent.h>     //For: DIR, dr, opendir(), readdir(), closedir()
+#include <sys/stat.h>   //For: S_ISREG, mkdir()
+#include <unistd.h>     //For: getcwd(), chdir(), read(), write(), close(), fork()
+#include <fcntl.h>      //For: O_RDONLY, open, O_CREAT, O_WRONLY
 
 //Ignore warnings
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -55,16 +55,16 @@ int _checktype(const char *path){    printf("\n");
 */
 //ABOUT - Explain how the terminal works
 int _about(char **args){
-    printf("\nABOUT THE PIMINAL\n");
+    printf("\nABOUT THE PIMINAL 1.0\n\n");
     printf("1. Read line of user input\n");
     printf("2. Tokenize read line, using space(' ') as the delimiter\n");
     printf("3. Separate the command from arguments(dir, folder, file)\n");
     printf("4. Use fork() and exec() System Call for starting a new process for the shell\n");
-    //First, an existing process forks itself into two separate ones. Then, the child uses exec() to replace itself with a new program. The parent process can continue doing other things, and it can even keep tabs on its children, using the system call wait().
     printf("5. Compare input from created commands\n");
     printf("6. Execute command if it matches\n");
     printf("\n");
 
+    printf("\nCreated by: Charlito Piao for CMSC 125 (2017)\n\n");
     return 1;
 }
 
@@ -111,14 +111,15 @@ int _cls(char **args){
     return 1;
 }
 
-//TODO:CMD - Starts a new instance of the command interpreter.
 int _cmd(char **args){
 
     if(args[1] == NULL){
         printf("\e[1;1H\e[2J");
         printf("\n--------------------------------------------------------------------------------");
-        printf("---\t\t\t~ WELCOME TO PITERMINAL 1.0\t\t\t     ---\n");
+        printf("--\t\t\t~ WELCOME TO PITERMINAL 1.0\t\t\t     --\n");
         printf("--------------------------------------------------------------------------------\n");
+        printf("\nType 'help' to show all the list of commands.\n\n");
+
     }else{
         perror("pt");
     }
@@ -328,6 +329,7 @@ int _type(char **args){
 
 //EXIT- close the piterminal
 int _quit(char **args){
+
     return 0;
 }
 
@@ -361,7 +363,7 @@ int _pi(char **args){
 
         printf("\n");
     }else{
-        printf("psh: requires no argument/s");
+        printf("pt: requires no argument/s");
     }
 
     return 1;
@@ -378,10 +380,10 @@ int _launch(char **args){
     pid_t pid = fork();
 
     if(pid == 0){
-        if(execvp(args[0], args) == -1){
-            perror("pt");
-        exit(1);
-    }
+        // if(execvp(args[0], args) == -1){
+        //     perror("pt");
+        //     exit(1);
+        // }
     }else if(pid < 0){
         perror("pt");
     }else{
@@ -432,7 +434,7 @@ char **_splitline(char *line){
     char *token, **tokens_backup;
 
     if(!tokens){
-        fprintf(stderr, "psh: Allocation Error!\n");
+        fprintf(stderr, "pt: Allocation Error!\n");
         exit(1);
     }
 
@@ -449,7 +451,7 @@ char **_splitline(char *line){
 
             if(!tokens){
                 free(tokens_backup);
-                fprintf(stderr, "psh: Allocation Error!\n");
+                fprintf(stderr, "pt: allocation error!\n");
                 exit(1);
             }
         }
@@ -471,9 +473,9 @@ int main(int argc, char **argv){
     // printf("%d\n", (int)getpid());
 
     printf("\n--------------------------------------------------------------------------------");
-    printf("---\t\t\t~ WELCOME TO PITERMINAL 1.0\t\t\t     ---\n");
+    printf("--\t\t\t~ WELCOME TO PITERMINAL 1.0\t\t\t     --\n");
     printf("--------------------------------------------------------------------------------\n");
-
+    printf("\nType 'help' to show all the list of commands.\n\n");
     char *line;
     char **args;
     int status = 1;
@@ -492,7 +494,7 @@ int main(int argc, char **argv){
 
         free(line);
         free(args);
-    }while(status);
+    }while(status); //loop until user doesn't use command: quit
 
     return 0;
 }
