@@ -21,6 +21,7 @@
 #include <sys/stat.h>   //For: S_ISREG, mkdir()
 #include <unistd.h>     //For: getcwd(), chdir(), read(), write(), close(), fork()
 #include <fcntl.h>      //For: O_RDONLY, open, O_CREAT, O_WRONLY
+#include <errno.h>
 
 //Ignore warnings
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -111,6 +112,7 @@ int _cls(char **args){
     return 1;
 }
 
+//CMD - Create new instance of the command interpreter
 int _cmd(char **args){
 
     if(args[1] == NULL){
@@ -127,43 +129,33 @@ int _cmd(char **args){
     return 1;
 }
 
-//TODO:COPY- Copies one or more files to another location.
+//COPY- Copies one or more files to another location.
 int _copy(char **args){
-    int src_fd, dst_fd, n, err;
-    unsigned char buffer[4096];
-    char *src_path, *dst_path;
+    FILE *fptr_input, *fptr_output;
+    char c;
 
     if(args[1] == NULL){
-        printf("psh: no file selected");
+        printf("pt: no file selected\n");
+    }else if (args[2] == NULL) {
+        printf("pt: no argument destination\n");
     }else{
-        printf("psh: copying");
-        src_path = args[1];
-        dst_path = args[2];
+        //get the path of source and destination
+        fptr_input = fopen(args[1], "r");
+        chdir(args[2]);
+        fptr_output = fopen(args[1], "w+");
 
-        //TODO:check if multiple files
-
-        src_fd = open(src_path, O_RDONLY);
-        dst_fd = open(dst_path, O_CREAT | O_WRONLY);
-
-        while (1) {
-            err = read(src_fd, buffer, 4096);
-            if (err == -1) {
-                printf("Error reading file.\n");
-                exit(1);
+        while(1){
+            c = fgetc(fptr_input);
+            if(feof(fptr_input)){
+                break;
             }
-            n = err;
-
-            if (n == 0) break;
-
-            err = write(dst_fd, buffer, n);
-            if (err == -1) {
-                printf("Error writing to file.\n");
-                exit(1);
-            }
+            fprintf(fptr_output, "%c", c);
         }
+        fclose(fptr_input);
+        fclose(fptr_output);
 
-        close(src_fd);
-        close(dst_fd);
+        chdir("..");
+        printf("pt: file coppied successfully.\n");
     }
 
     return 1;
@@ -244,10 +236,32 @@ int _mkdir(char **args){
 
 //TODO:MOVE- Moves one or more files from one directory to another directory.
 int _move(char **args){
-    if(args[1] == NULL){
-        printf("pt: no argument/s found.\n");
-    }else{
+    FILE *fptr_input, *fptr_output;
+    char c;
 
+    if(args[1] == NULL){
+        printf("pt: no file selected\n");
+    }else if (args[2] == NULL) {
+        printf("pt: no argument destination\n");
+    }else{
+        //get the path of source and destination
+        fptr_input = fopen(args[1], "r");
+        chdir(args[2]);
+        fptr_output = fopen(args[1], "w+");
+
+        while(1){
+            c = fgetc(fptr_input);
+            if(feof(fptr_input)){
+                break;
+            }
+            fprintf(fptr_output, "%c", c);
+        }
+        fclose(fptr_input);
+        fclose(fptr_output);
+
+        chdir("..");
+        remove(args[1]);
+        printf("pt: file moved successfully.\n");
     }
 
     return 1;
@@ -259,7 +273,11 @@ int _rename(char **args){
     if(args[1] == NULL || args[2] == NULL){
         printf("pt: no argument/s found.\n");
     }else{
-        rename(args[1], args[2]);
+        if(rename(args[1], args[2]) == 0){
+            printf("pt: successfully renamed file\n");
+        }else{
+            printf("pt: error occured.\n");
+        }
     }
 
     return 1;
