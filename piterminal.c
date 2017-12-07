@@ -16,7 +16,8 @@
 #include <stdlib.h>     //For: malloc(), realloc(), free(), exit(), execvp(), EXIT_SUCCESS, EXIT_FAILURE
 #include <stdio.h>      //For: printf(), fprintf(),stderr, getchar(), perror()
 #include <string.h>     //For: strcmp(), strktok()
-#include <time.h>       //For: time, localtime
+#include <sys/time.h>   //For: time, localtime
+#include <time.h>   //For: time, localtime
 #include <dirent.h>     //For: DIR, dr, opendir(), readdir(), closedir()
 #include <sys/stat.h>   //For: S_ISREG, mkdir()
 #include <unistd.h>     //For: getcwd(), chdir(), read(), write(), close(), fork()
@@ -45,7 +46,8 @@ int _num_commands(){
 */
 
 //Checker function if directory or file
-int _checktype(const char *path){    printf("\n");
+int _checktype(const char *path){
+    printf("\n");
     struct stat path_stat;
     stat(path, &path_stat);
     return S_ISREG(path_stat.st_mode);
@@ -163,22 +165,40 @@ int _copy(char **args){
 
 //DATE- Displays or sets the date.
 int _date(char **args){
-    int tempYear, tempMonth, tempDay;
-    // char date;
+    const char* dataStr = args[1];
 
-    time_t t = time(NULL);
-    struct tm tm = *localtime(&t);
+    if(args[1] == NULL){
+        time_t t = time(NULL);
+        struct tm tm = *localtime(&t);
+        printf("Current date: %d-%d-%d (MMDDYY)\n",tm.tm_mon+1, tm.tm_mday,tm.tm_year+1900);
 
-    printf("Current date: %d-%d-%d\n",tm.tm_year+1900,tm.tm_mon+1, tm.tm_mday);
-    printf("Enter the new date: (yy-mm-dd) ");
+    }else if(args[1] != NULL){
+        char buf[3] = {0};
 
-    //TODO: Ask for year,month, and day
-    tempYear = tempMonth = tempDay = 1;
+        strncpy(buf, dataStr + 0, 2);
+        unsigned short month = atoi(buf);
 
-    tm.tm_year = tempYear;
-    tm.tm_mon = tempMonth;
-    tm.tm_mday = tempDay;
-    printf("\n");
+        strncpy(buf, dataStr + 2, 2);
+        unsigned short day = atoi(buf);
+
+        strncpy(buf, dataStr + 4, 2);
+        unsigned short year = atoi(buf);
+
+        time_t mytime = time(0);
+        struct tm* tm_ptr = localtime(&mytime);
+
+        if (tm_ptr)
+        {
+            tm_ptr->tm_mon  = month - 1;
+            tm_ptr->tm_mday = day;
+            tm_ptr->tm_year = year + (2000 - 1900);
+
+            const struct timeval tv = {mktime(tm_ptr), 0};
+            settimeofday(&tv, 0);
+        }
+    }else{
+        printf("pt: requires no argument/s.\n");
+    }
 
     return 1;
 }
@@ -205,7 +225,7 @@ int _dir(char **args){
 
     if(args[1] == NULL){
         while((de = readdir(dr)) != NULL){
-            printf("%s\n", de->d_name);
+            printf("  %s\n", de->d_name);
         }
         closedir(dr);
     }else if(args[1] != NULL){
@@ -238,13 +258,13 @@ int _mkdir(char **args){
 int _move(char **args){
     FILE *fptr_input, *fptr_output;
     char c;
+    int i;
 
     if(args[1] == NULL){
         printf("pt: no file selected\n");
     }else if (args[2] == NULL) {
         printf("pt: no argument destination\n");
     }else{
-        //get the path of source and destination
         fptr_input = fopen(args[1], "r");
         chdir(args[2]);
         fptr_output = fopen(args[1], "w+");
@@ -262,6 +282,10 @@ int _move(char **args){
         chdir("..");
         remove(args[1]);
         printf("pt: file moved successfully.\n");
+    }
+
+    for(i = 1; args[i]!= NULL; i++){
+
     }
 
     return 1;
@@ -484,12 +508,6 @@ char **_splitline(char *line){
 */
 
 int main(int argc, char **argv){
-
-    // printf("%d\n", (int)getpid());
-    // pid_t pid = fork();
-    // printf("returned: %d\n", pid);
-    // printf("%d\n", (int)getpid());
-
     printf("\n--------------------------------------------------------------------------------");
     printf("--\t\t\t~ WELCOME TO PITERMINAL 1.0\t\t\t     --\n");
     printf("--------------------------------------------------------------------------------\n");
@@ -501,14 +519,8 @@ int main(int argc, char **argv){
     do{
         printf("\n> ");
         line = _readline();
-        // printf("line: %s \n", line);
-
         args = _splitline(line);
-        // printf("args1: %s \nargs2: %s\n",args[1], args[2]);
-
         status = _execute(args);
-        // printf("line: %s \nargs1: %s args2: %s\n", line, args[1], args[2]);
-
 
         free(line);
         free(args);
